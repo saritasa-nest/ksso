@@ -1,0 +1,17 @@
+extends: default
+
+yaml-files:
+  - '*.yaml'
+  - '*.yml'
+  - '.yamllint'
+
+ignore: |
+  taskfiles/*
+
+# see rules
+# https://yamllint.readthedocs.io/en/stable/rules.html
+rules:
+  line-length: disable
+  document-start: disable
+  comments: disable
+  comments-indentation: disable

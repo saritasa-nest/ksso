@@ -1,0 +1,10 @@
+*.bak
+*.log
+*.pem
+*.secrets.yaml
+*.zip
+.idea/
+.vscode
+TODO.md
+build/
+dist/

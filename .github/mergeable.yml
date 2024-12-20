@@ -1,0 +1,60 @@
+version: 2
+mergeable:
+  # Title must begin with "doc:", "feat:", "fix:" and exclude "wip"
+  - when: pull_request.*
+    name: 'Title check'
+    validate:
+      - do: title
+        must_exclude:
+          regex: '\bwip\b'
+          regex_flag: 'i' # case-insensitive (it is a default, to disable use 'none')
+          message: 'Title must exclude "wip"'
+        begins_with:
+          match: ['doc:', 'feat:', 'fix:']
+          message: 'Title must begin with "doc:", "feat:", or "fix:"'
+
+  # "wip" label must be missing
+  - when: pull_request.*
+    name: 'Label check'
+    validate:
+      - do: label
+        must_include:
+          regex: Needs Review|NeedsReview
+          regex_flag: 'i' # case-insensitive (it is a default, to disable use 'none')
+          message: 'Merging is not allowed if the "needs review" label is missing'
+        must_exclude:
+          regex: '\bwip\b'
+          regex_flag: 'i' # case-insensitive (it is a default, to disable use 'none')
+          message: 'Merging is not allowed if "wip" or "WIP" labels are present'
+
+  # CHANGELOG.md is required in the PR
+  - when: pull_request.*
+    name: 'Сhecking for the presence of the CHANGELOG.md file'
+    validate:
+      - do: changeset
+        no_empty:
+          enabled: true
+          message: 'empty'
+        must_include:
+          regex: 'CHANGELOG.md'
+          message: 'CHANGELOG.md with details must be present in every PR'
+
+  # Description of the PR must not be empty, must begin with a summary
+  # and contain a link to JIRA and must not include "DO NOT MERGE"
+  - when: pull_request.*, pull_request_review.*
+    name: 'Description check'
+    validate:
+      - do: description
+        no_empty:
+          enabled: true # Cannot be empty when true.
+          message: 'PR should have a proper summary description'
+        must_include:
+          regex: 'https://saritasa.atlassian.net/browse/[A-Z][A-Z0-9]+-\d+'
+          message: 'The description must contain a link to the JIRA task'
+        must_exclude:
+          regex: 'DO NOT MERGE'
+          regex_flag: 'i' # case-insensitive (it is a default, to disable use 'none')
+          message: 'The description should not contain "DO NOT MERGE"'
+        begins_with:
+          match: '### Summary'
+          message: 'PR Description should start with the title Summary'

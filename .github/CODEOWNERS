@@ -1,0 +1,6 @@
+# These people will be assigned as reviewers to any PR in this repo,
+# except PR creator and people without READ access to repository.
+#
+# For details see https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+*  @dmitry-mightydevops @luciano-buono @kseniyashaydurova @KrawczowaKris
