@@ -67,19 +67,11 @@ repos:
     rev: 1.16.0
     hooks:
       - id: yamlfix
+        additional_dependencies:
+          - maison<2.0.0
         args:
           - --config-file
           - .yamlfix.toml
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
-        args:
-          - --line-length=88
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
   - repo: https://github.com/pycqa/flake8
     rev: 7.1.1
     hooks:
@@ -88,5 +80,18 @@ repos:
           - flake8-bugbear==24.2.6
           - flake8-comprehensions
           - flake8-simplify
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args:
+          - --line-length=100
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args:
+          - --profile
+          - black
 ci:
   autoupdate_schedule: monthly
