@@ -71,7 +71,7 @@ def main():
         "--aws-role-arn",
         type=str,
         required=True,
-        help=("AWS IAM Role ARN to assume " "(e.g., arn:aws:iam::123456789012:role/role-name)",),
+        help="AWS IAM Role ARN to assume (e.g., arn:aws:iam::123456789012:role/role-name)",
     )
     args = parser.parse_args()
 
