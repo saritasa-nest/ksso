@@ -5,13 +5,14 @@ from sys import exit
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-logger = logging.getLogger("stderr_logger")
+logger = logging.getLogger("error")
 
 
 def assume_aws_role_with_keycloak_token(
     token, aws_role_arn, session_name, session_duration_hours=2
 ):
-    """Assume an AWS IAM role using a Keycloak-provided token.
+    """
+    Assume an AWS IAM role using a Keycloak-provided token.
 
     Args:
         token (str): The Keycloak access token (WebIdentityToken).
@@ -55,22 +56,35 @@ def assume_aws_role_with_keycloak_token(
 
 
 def export_aws_credentials_env(credentials):
-    """Print AWS temporary credentials in an environment variable-friendly
-    format.
+    """
+    Generate and print AWS temporary credentials in a format compatible with
+    shell environment variable exports.
+
+    This function is intended to output the necessary `export` commands for
+    AWS credentials, allowing users to quickly set their environment variables
+    for temporary access to AWS resources. The output can be used directly
+    in a Bash shell by sourcing the command.
 
     Args:
-        credentials (Dict[str, str]): AWS credentials with AccessKeyId,
-                                      SecretAccessKey, SessionToken, and
-                                      Expiration.
+        credentials (Dict[str, str]): A dictionary containing AWS temporary
+                                      credentials, which must include:
+                                      - 'AccessKeyId': The AWS access key ID.
+                                      - 'SecretAccessKey': The AWS secret key.
+                                      - 'SessionToken': The AWS session token.
+                                      - 'Expiration': The expiration timestamp
+                                        (must support `isoformat()`).
 
-    Prints:
-        Environment variable export commands that can be used in a
-        Bash shell via source:
+    Example Usage:
+        This function is typically used in the following way to simplify
+        credential management. Example usage in a Bash shell:
 
-        source <(ksso --env \
-            --client-id client-name-aws \
-            --aws-role-arn arn:aws:iam::account_id:role/some-role-name
-        )
+            source <(ksso --env \
+                --client-id client-name-aws \
+                --aws-role-arn arn:aws:iam::account_id:role/some-role-name)
+
+    Output:
+        Prints environment variable export commands, which can be directly
+        sourced into the shell to configure AWS credentials temporarily
     """
     print(f'export AWS_ACCESS_KEY_ID={credentials["AccessKeyId"]}')
     print(f'export AWS_SECRET_ACCESS_KEY={credentials["SecretAccessKey"]}')
@@ -79,15 +93,30 @@ def export_aws_credentials_env(credentials):
 
 
 def export_aws_credentials_json(credentials):
-    """Print AWS temporary credentials in JSON format.
+    """
+    Generate and print AWS temporary credentials in a json format.
+
+    This function is intended to output the json object with valid
+    aws short term credentials, that can be quickly assumed by tools
+    like aws-vault supporting credentials helpers.
 
     Args:
-        credentials (Dict[str, str]): AWS credentials with AccessKeyId,
-                                      SecretAccessKey, SessionToken, and
-                                      Expiration.
+        credentials (Dict[str, str]): A dictionary containing AWS temporary
+                                      credentials, which must include:
+                                      - 'AccessKeyId': The AWS access key ID.
+                                      - 'SecretAccessKey': The AWS secret key.
+                                      - 'SessionToken': The AWS session token.
+                                      - 'Expiration': The expiration timestamp
+                                        (must support `isoformat()`).
 
-    Prints:
-        JSON-formatted AWS credentials.
+    Example Usage:
+        This function is typically used in conjunction with a tool like `aws-vault`
+        to simplify credential management. See expected aws-vault configuration
+        in the documentation.
+
+    Output:
+        Prints json object, which can be directly sourced into the shell
+        or cli tools like `aws-vault` supporting credential helpers
     """
     aws_credentials = {
         "AccessKeyId": credentials["AccessKeyId"],

@@ -1,8 +1,19 @@
-# This is a small CLI application that helps authenticate keycloak users into
-# AWS via OIDC We obtain a token from keycloak then we obtain short-term IAM
-# credentials by assuming role with web-indentity token The AWS role to assume
-# should contain proper trust policy for the identity provider associated with
-# the keycloak instance
+"""
+┌──────────────────────────────────────────────────────────────────────────┐
+│ KSSO                                                                     │
+│ ----                                                                     │
+│ This is a small CLI application that helps authenticate keycloak         │
+│ users into AWS via OIDC.                                                 │
+│                                                                          │
+│ We obtain a token from keycloak, then we obtain short-term IAM           │
+│ credential by assuming role with web-indentity token.                    │
+│                                                                          │
+│ The AWS role to assume should contain proper trust policy for the        │
+│ identity provider associated with the keycloak instance.                 │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+"""
+
 import argparse
 import logging
 import os
@@ -27,11 +38,12 @@ DEFAULT_CONFIG_PATH = os.path.expanduser("~/.ksso_config.toml")
 # from the web-server thread back into the main process
 token_queue = Queue()
 app.token_queue = token_queue
-logger = logging.getLogger("stderr_logger")
+logger = logging.getLogger("error")
 
 
 def main():
-    """Entry point for the application.
+    """
+    Entry point for the application.
 
     This function:
     1. Parses CLI arguments for configuration and options.
@@ -75,7 +87,6 @@ def main():
     )
     args = parser.parse_args()
 
-    # Load configuration
     config = load_config(args.config)
     sso_config = config["sso"]
     redirect_uri = f"http://localhost:{sso_config['sso_agent_port']}/callback"

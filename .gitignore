@@ -9,3 +9,4 @@ TODO.md
 __pycache__
 build/
 dist/
+ksso.spec
