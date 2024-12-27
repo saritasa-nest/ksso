@@ -30,7 +30,7 @@ from ksso.aws import (
     export_aws_credentials_env,
     export_aws_credentials_json,
 )
-from ksso.config import load_config
+from ksso.config import ConfigError, load_config
 from ksso.server import app
 
 DEFAULT_CONFIG_PATH = os.path.expanduser("~/.ksso_config.toml")
@@ -88,21 +88,27 @@ def main():
     )
     args = parser.parse_args()
 
-    config = load_config(args.config)
-    sso_config = config["sso"]
-    redirect_uri = f"http://localhost:{sso_config['sso_agent_port']}/callback"
-
     try:
-        keycloak_url = f"{sso_config['sso_domain']}/realms/{sso_config['sso_realm']}"
+        # load configuration from the file
+        ksso_config = load_config(args.config)
+        # define redirect url to process the authentication token
+        redirect_uri = f"http://localhost:{ksso_config.sso_agent_port}/callback"
+        # define keycloak realm url
+        keycloak_url = f"{ksso_config.sso_domain}/realms/{ksso_config.sso_realm}"
+        # obtain realm data
         response = requests.get(keycloak_url, timeout=5)
         response.raise_for_status()
         realm_data = response.json()
+        # obtain token service url of the realm
         keycloak_token_service_url = realm_data.get("token-service")
         if not keycloak_token_service_url:
             logger.error("Error: Keycloak 'token-service' is not found in keycloak response.")
             exit(1)
+    except ConfigError as e:
+        logger.error(e)
+        exit(1)
     except (requests.RequestException, ValueError) as e:
-        logger.error(f"Error while connecting to Keycloak: {sso_config['sso_domain']}: {e}")
+        logger.error(f"Error while connecting to Keycloak: {ksso_config.sso_domain}: {e}")
         exit(1)
 
     # Store dynamic values in Flask app config
@@ -112,10 +118,10 @@ def main():
     app.config["AWS_ROLE_ARN"] = args.aws_role_arn
 
     # Start Flask app in a separate thread
-    threading.Thread(target=lambda: app.run(port=sso_config["sso_agent_port"]), daemon=True).start()
+    threading.Thread(target=lambda: app.run(port=ksso_config.sso_agent_port), daemon=True).start()
 
     # Open the browser for authentication
-    webbrowser.open(f"http://localhost:{sso_config['sso_agent_port']}/")
+    webbrowser.open(f"http://localhost:{ksso_config.sso_agent_port}/")
 
     # Wait for the token and session name to be available in the queue
     access_token, session_name = token_queue.get()

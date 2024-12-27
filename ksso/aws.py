@@ -1,6 +1,9 @@
 import json
 import logging
+from dataclasses import dataclass
+from datetime import datetime
 from sys import exit
+from typing import Optional
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -8,9 +11,40 @@ from botocore.exceptions import BotoCoreError, ClientError
 logger = logging.getLogger("error")
 
 
+@dataclass
+class AWSCredentials:
+    AccessKeyId: str
+    SecretAccessKey: str
+    SessionToken: str
+    Expiration: datetime
+
+    def as_env(self) -> str:
+        """
+        Return the AWS credentials in the format of shell environment variable export commands.
+        """
+        return (
+            f"export AWS_ACCESS_KEY_ID={self.AccessKeyId}\n"
+            f"export AWS_SECRET_ACCESS_KEY={self.SecretAccessKey}\n"
+            f"export AWS_SESSION_TOKEN={self.SessionToken}\n"
+            f"export AWS_CREDENTIALS_EXPIRATION={self.Expiration.isoformat()}"
+        )
+
+    def as_json(self) -> str:
+        """
+        Return the AWS credentials in JSON format.
+        """
+        aws_credentials = {
+            "AccessKeyId": self.AccessKeyId,
+            "SecretAccessKey": self.SecretAccessKey,
+            "SessionToken": self.SessionToken,
+            "Expiration": self.Expiration.isoformat(),
+        }
+        return json.dumps(aws_credentials, indent=4)
+
+
 def assume_aws_role_with_keycloak_token(
-    token, aws_role_arn, session_name, session_duration_hours=2
-):
+    token: str, aws_role_arn: str, session_name: str, session_duration_hours: int = 2
+) -> Optional[AWSCredentials]:
     """
     Assume an AWS IAM role using a Keycloak-provided token.
 
@@ -19,9 +53,10 @@ def assume_aws_role_with_keycloak_token(
         aws_role_arn (str): The Amazon Resource Name (ARN) of the role to
                             assume.
         session_name (str): A name to uniquely identify the assumed session.
+        session_name (int): A session duration in hours.
 
     Returns:
-        Optional[Dict[str, str]]: AWS temporary credentials including
+        Optional[AWSCredentials]: AWS temporary credentials including
         AccessKeyId, SecretAccessKey, SessionToken, and Expiration, or
         None on failure.
 
@@ -37,7 +72,13 @@ def assume_aws_role_with_keycloak_token(
             WebIdentityToken=token,
             DurationSeconds=session_duration_hours * 3600,
         )
-        return response["Credentials"]
+        credentials = response["Credentials"]
+        return AWSCredentials(
+            AccessKeyId=credentials["AccessKeyId"],
+            SecretAccessKey=credentials["SecretAccessKey"],
+            SessionToken=credentials["SessionToken"],
+            Expiration=credentials["Expiration"],
+        )
     except ClientError as e:
         # Handle AWS-specific errors
         error_code = e.response["Error"]["Code"]
@@ -55,7 +96,7 @@ def assume_aws_role_with_keycloak_token(
     return None
 
 
-def export_aws_credentials_env(credentials):
+def export_aws_credentials_env(credentials: AWSCredentials):
     """
     Generate and print AWS temporary credentials in a format compatible with
     shell environment variable exports.
@@ -66,7 +107,7 @@ def export_aws_credentials_env(credentials):
     in a Bash shell by sourcing the command.
 
     Args:
-        credentials (Dict[str, str]): A dictionary containing AWS temporary
+        credentials (AWSCredentials): A dictionary containing AWS temporary
                                       credentials, which must include:
                                       - 'AccessKeyId': The AWS access key ID.
                                       - 'SecretAccessKey': The AWS secret key.
@@ -86,13 +127,10 @@ def export_aws_credentials_env(credentials):
         Prints environment variable export commands, which can be directly
         sourced into the shell to configure AWS credentials temporarily
     """
-    print(f'export AWS_ACCESS_KEY_ID={credentials["AccessKeyId"]}')
-    print(f'export AWS_SECRET_ACCESS_KEY={credentials["SecretAccessKey"]}')
-    print(f'export AWS_SESSION_TOKEN={credentials["SessionToken"]}')
-    print(f'export AWS_CREDENTIALS_EXPIRATION={credentials["Expiration"].isoformat()}')
+    print(credentials.as_env())
 
 
-def export_aws_credentials_json(credentials):
+def export_aws_credentials_json(credentials: AWSCredentials):
     """
     Generate and print AWS temporary credentials in a json format.
 
@@ -101,7 +139,7 @@ def export_aws_credentials_json(credentials):
     like aws-vault supporting credentials helpers.
 
     Args:
-        credentials (Dict[str, str]): A dictionary containing AWS temporary
+        credentials (AWSCredentials): A dictionary containing AWS temporary
                                       credentials, which must include:
                                       - 'AccessKeyId': The AWS access key ID.
                                       - 'SecretAccessKey': The AWS secret key.
@@ -118,10 +156,4 @@ def export_aws_credentials_json(credentials):
         Prints json object, which can be directly sourced into the shell
         or cli tools like `aws-vault` supporting credential helpers
     """
-    aws_credentials = {
-        "AccessKeyId": credentials["AccessKeyId"],
-        "SecretAccessKey": credentials["SecretAccessKey"],
-        "SessionToken": credentials["SessionToken"],
-        "Expiration": credentials["Expiration"].isoformat(),
-    }
-    print(json.dumps(aws_credentials, indent=4))
+    print(credentials.as_json())

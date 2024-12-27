@@ -1,9 +1,23 @@
 import os
+from dataclasses import dataclass
 
 import toml
 
 
-def load_config(config_path: str):
+@dataclass
+class KeycloakConfig:
+    sso_domain: str
+    sso_realm: str
+    sso_agent_port: int
+
+
+class ConfigError(Exception):
+    """Custom exception for configuration errors."""
+
+    pass
+
+
+def load_config(config_path: str) -> KeycloakConfig:
     """Load Keycloak configuration from a TOML file with validation."""
     if not os.path.exists(config_path):
         print(f"Error: Config file not found at '{config_path}'.")
@@ -17,4 +31,15 @@ def load_config(config_path: str):
         }
         print(toml.dumps(example_config))
         exit(1)
-    return toml.load(config_path)
+
+    config = toml.load(config_path)
+    keycloak_config = config.get("sso")
+
+    if keycloak_config:
+        return KeycloakConfig(
+            sso_domain=keycloak_config.get("sso_domain"),
+            sso_realm=keycloak_config.get("sso_realm"),
+            sso_agent_port=keycloak_config.get("sso_agent_port"),
+        )
+
+    raise ConfigError(f"Error: Missing 'sso' section in the configuration file at {config_path}")
