@@ -7,10 +7,12 @@ import jwt
 import requests
 from flask import Flask, redirect, request
 
-if getattr(sys, "frozen", False):
-    base_path = sys._MEIPASS  # PyInstaller temp directory
-else:
-    base_path = os.path.abspath(".")
+# Use PyInstaller temp directory if bundled
+# If the script is running as a bundled executable (created by PyInstaller),
+# 'sys.frozen' is set to True, and 'sys._MEIPASS' provides the path to the
+# temporary directory where PyInstaller extracts bundled resources.
+# Otherwise, use the current working directory as the base path.
+base_path = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.abspath(".")
 
 app = Flask(__name__)
 
