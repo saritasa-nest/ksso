@@ -53,7 +53,7 @@ def assume_aws_role_with_keycloak_token(
         aws_role_arn (str): The Amazon Resource Name (ARN) of the role to
                             assume.
         session_name (str): A name to uniquely identify the assumed session.
-        session_name (int): A session duration in hours.
+        session_duration_hours (int): A session duration in hours.
 
     Returns:
         Optional[AWSCredentials]: AWS temporary credentials including
