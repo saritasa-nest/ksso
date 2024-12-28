@@ -89,33 +89,20 @@ def main():
     args = parser.parse_args()
 
     try:
-        # load configuration from the file
         ksso_config = load_config(args.config)
-        # define redirect url to process the authentication token
-        redirect_uri = f"http://localhost:{ksso_config.sso_agent_port}/callback"
-        # define keycloak realm url
-        keycloak_url = f"{ksso_config.sso_domain}/realms/{ksso_config.sso_realm}"
-        # obtain realm data
-        response = requests.get(keycloak_url, timeout=5)
-        response.raise_for_status()
-        realm_data = response.json()
-        # obtain token service url of the realm
-        keycloak_token_service_url = realm_data.get("token-service")
-        if not keycloak_token_service_url:
-            logger.error("Error: Keycloak 'token-service' is not found in keycloak response.")
-            exit(1)
     except ConfigError as e:
         logger.error(e)
         exit(1)
-    except (requests.RequestException, ValueError) as e:
-        logger.error(f"Error while connecting to Keycloak: {ksso_config.sso_domain}: {e}")
+    except (requests.RequestException, requests.exceptions.HTTPError, ValueError) as e:
+        logger.error(f"Error while connecting to Keycloak: {e}")
         exit(1)
 
     # Store dynamic values in Flask app config
-    app.config["KEYCLOAK_URL"] = keycloak_token_service_url
-    app.config["REDIRECT_URI"] = redirect_uri
-    app.config["CLIENT_ID"] = args.client_id
-    app.config["AWS_ROLE_ARN"] = args.aws_role_arn
+    client_id, aws_role_arn = args.client_id, args.aws_role_arn
+    app.config["KEYCLOAK_URL"] = ksso_config.sso_token_service_url
+    app.config["REDIRECT_URI"] = ksso_config.sso_redirect_url
+    app.config["CLIENT_ID"] = client_id
+    app.config["AWS_ROLE_ARN"] = aws_role_arn
 
     # Start Flask app in a separate thread
     threading.Thread(target=lambda: app.run(port=ksso_config.sso_agent_port), daemon=True).start()
@@ -130,7 +117,7 @@ def main():
         print(decoded_token)
 
     # Assume AWS role using the obtained access token and session name
-    credentials = assume_aws_role_with_keycloak_token(access_token, args.aws_role_arn, session_name)
+    credentials = assume_aws_role_with_keycloak_token(access_token, aws_role_arn, session_name)
 
     # Output credentials based on CLI args
     if args.json:

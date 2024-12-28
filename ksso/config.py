@@ -1,14 +1,40 @@
 import os
 from dataclasses import dataclass
 
+import requests
 import toml
 
 
 @dataclass
 class KeycloakConfig:
-    sso_domain: str
-    sso_realm: str
-    sso_agent_port: int
+    """
+    Configuration class for Keycloak Single Sign-On (SSO) integration.
+
+    Attributes:
+        sso_domain (str): The domain of the Keycloak server (e.g., 'keycloak.example.com').
+        sso_realm (str): The name of the Keycloak realm used for authentication.
+        sso_agent_port (int): The port used by the ksso server for communication.
+        sso_redirect_url (str): The URL where Keycloak will redirect users after authentication.
+        sso_realm_url (str): The full URL of the Keycloak realm
+            (e.g., 'https://keycloak.example.com/realms/<realm>').
+        sso_token_service_url (str): The URL of the Keycloak realm token service endpoint
+            for obtaining tokens.
+    """
+
+    def __init__(self, sso_domain: str, sso_realm: str, sso_agent_port: int):
+        self.sso_domain = sso_domain
+        self.sso_realm = sso_realm
+        self.sso_agent_port = sso_agent_port
+        self.sso_redirect_url = f"http://localhost:{self.sso_agent_port}/callback"
+        self.sso_realm_url = f"{self.sso_domain}/realms/{self.sso_realm}"
+
+        response = requests.get(self.sso_realm_url, timeout=5)
+        response.raise_for_status()
+        realm_data = response.json()
+        self.sso_token_service_url = realm_data.get("token-service")
+
+        if not self.sso_token_service_url:
+            raise ConfigError("Error: Keycloak 'token-service' is not found in keycloak response.")
 
 
 class ConfigError(Exception):
