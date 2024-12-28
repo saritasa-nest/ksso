@@ -5,6 +5,12 @@ import requests
 import toml
 
 
+class ConfigError(Exception):
+    """Custom exception for configuration errors."""
+
+    pass
+
+
 @dataclass
 class KeycloakConfig:
     """
@@ -35,12 +41,6 @@ class KeycloakConfig:
 
         if not self.sso_token_service_url:
             raise ConfigError("Error: Keycloak 'token-service' is not found in keycloak response.")
-
-
-class ConfigError(Exception):
-    """Custom exception for configuration errors."""
-
-    pass
 
 
 def load_config(config_path: str) -> KeycloakConfig:
