@@ -17,6 +17,7 @@ jobs:
           - windows-latest
         python-version:
           - 3.12
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,6 +39,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Build with PyInstaller
         run: |
+          ls -la
           if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macos-latest" ]]; then
             poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-${{ steps.version.outputs.version }}
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
