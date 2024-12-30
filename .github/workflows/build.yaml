@@ -34,8 +34,13 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          VERSION=$(poetry version --short)
-          echo "::set-output name=version::$VERSION"
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            $version = poetry version --short
+            echo "::set-output name=version::$version"
+          else
+            VERSION=$(poetry version --short)
+            echo "::set-output name=version::$VERSION"
+          fi
       - name: Build with PyInstaller
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macos-latest" ]]; then
