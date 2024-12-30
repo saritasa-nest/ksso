@@ -34,13 +34,9 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            $version = poetry version --short
-            echo "::set-output name=version::$version"
-          else
-            version=$(poetry version --short)
-            echo "::set-output name=version::$version"
-          fi
+          version=$(poetry version --short)
+          # echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_ENV
         shell: bash
       - name: Build with PyInstaller
         run: |
