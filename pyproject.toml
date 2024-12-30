@@ -2,7 +2,7 @@
 name = "ksso"
 version = "0.1.0"
 description = "A Flask app to authenticate via Keycloak and assume AWS role"
-authors = ["Your Name <youremail@example.com>"]
+authors = ["Dmitry Semenov"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "ksso"}]
