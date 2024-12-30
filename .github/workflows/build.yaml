@@ -28,7 +28,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Poetry
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
+          python -m pip install poetry
+          # curl -sSL https://install.python-poetry.org | python3 -
           # echo "export PATH=\"$HOME/.local/bin:$PATH\"" >> $GITHUB_ENV
       - name: Add Poetry to PATH
         if: matrix.os == 'windows-latest'
@@ -46,7 +47,6 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Build with PyInstaller
         run: |
-          ls -la
           if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macos-latest" ]]; then
             poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-${{ steps.version.outputs.version }}
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
