@@ -29,15 +29,6 @@ jobs:
       - name: Install Poetry
         run: |
           python -m pip install poetry
-          # curl -sSL https://install.python-poetry.org | python3 -
-          # echo "export PATH=\"$HOME/.local/bin:$PATH\"" >> $GITHUB_ENV
-      - name: Add Poetry to PATH
-        if: matrix.os == 'windows-latest'
-        run: |
-          $poetryPath = "$env:USERPROFILE\\.local\\bin"
-          $env:PATH += ";$poetryPath"
-          poetry --version
-        shell: pwsh
       - name: Install dependencies
         run: poetry install --no-interaction --no-ansi
       - name: Determine version
