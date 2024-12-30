@@ -44,7 +44,7 @@ jobs:
           elif [ "${{ matrix.os }}" == "windows-latest" ]; then
             poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-${{ steps.version.outputs.version }}
           fi
-          shell: bash
+        shell: bash
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
