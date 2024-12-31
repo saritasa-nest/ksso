@@ -79,5 +79,5 @@ jobs:
         run: |-
           ls -la dist/ksso-0.1.0
           for file in $(ls dist/ksso-0.1.0); do
-            gh release upload v${{ steps.version.outputs.version }} dist/$file --clobber
+            gh release upload v${{ steps.version.outputs.version }} dist/ksso-0.1.0/$file --clobber
           done
