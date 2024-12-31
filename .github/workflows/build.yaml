@@ -35,10 +35,11 @@ jobs:
         run: poetry install --no-interaction --no-ansi
       - name: Determine version
         id: version
-        run: echo "version=$(poetry version --short)" >> $GITHUB_ENV
+        run: |
+          version=$(poetry version --short)
+          echo "version=$version" >> $GITHUB_ENV
+          echo "::set-output name=version::$version"
         shell: bash
-        env:
-          version: ${{ steps.version.outputs.version }}
       - name: Build with PyInstaller
         run: |
           source $GITHUB_ENV
@@ -59,6 +60,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Version
+        run: echo "Version is ${{ needs.build.outputs.version }}"
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Download artifacts
