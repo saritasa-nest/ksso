@@ -67,6 +67,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/ksso-${{ matrix.os }}-${{ env.version }}
+          asset_path: dist/ksso-${{ env.version }}
           asset_name: ksso-${{ matrix.os }}-${{ env.version }}
           asset_content_type: application/zip
