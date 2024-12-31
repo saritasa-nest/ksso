@@ -85,5 +85,5 @@ jobs:
           version=${{ needs.build.outputs.version }}
           ls -la dist/ksso-$version
           for file in $(ls dist/ksso-$version); do
-            gh release upload v dist/ksso-$version/$file --clobber
+            gh release upload v${version} dist/ksso-$version/$file --clobber
           done
