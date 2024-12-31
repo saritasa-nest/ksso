@@ -51,6 +51,14 @@ jobs:
         with:
           name: ksso-${{ matrix.os }}-${{ env.version }}
           path: dist/ksso*
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -61,12 +69,10 @@ jobs:
           release_name: Release v${{ env.version }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+      - name: Upload Release Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/ksso-${{ env.version }}
-          asset_name: ksso-${{ matrix.os }}-${{ env.version }}
-          asset_content_type: application/zip
+        run: |-
+          for file in $(ls dist/); do
+            gh release upload v${{ steps.version.outputs.version }} dist/$file --clobber
+          done
