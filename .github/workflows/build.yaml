@@ -40,6 +40,7 @@ jobs:
       - name: Build with PyInstaller
         run: |
           source $GITHUB_ENV
+          os_name=${{ runner.os }}
           if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macos-latest" ]]; then
             poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-${os_name,,}-$version
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
