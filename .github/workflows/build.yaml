@@ -19,6 +19,8 @@ jobs:
         python-version:
           - 3.12
     timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,10 +35,10 @@ jobs:
         run: poetry install --no-interaction --no-ansi
       - name: Determine version
         id: version
-        run: |
-          version=$(poetry version --short)
-          echo "version=$version" >> $GITHUB_ENV
+        run: echo "version=$(poetry version --short)" >> $GITHUB_ENV
         shell: bash
+        env:
+          version: ${{ steps.version.outputs.version }}
       - name: Build with PyInstaller
         run: |
           source $GITHUB_ENV
@@ -69,15 +71,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ env.version }}
-          release_name: Release v${{ env.version }}
+          tag_name: v${{ needs.build.outputs.version }}
+          release_name: Release v${{ needs.build.outputs.version }}
           draft: false
           prerelease: false
       - name: Upload Release Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          ls -la dist/ksso-0.1.0
-          for file in $(ls dist/ksso-0.1.0); do
-            gh release upload v${{ steps.version.outputs.version }} dist/ksso-0.1.0/$file --clobber
+          version=${{ needs.build.outputs.version }}
+          ls -la dist/ksso-$version
+          for file in $(ls dist/ksso-$version); do
+            gh release upload v dist/ksso-$version/$file --clobber
           done
