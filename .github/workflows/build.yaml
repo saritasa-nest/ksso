@@ -41,10 +41,11 @@ jobs:
         run: |
           source $GITHUB_ENV
           os_name=${{ runner.os }}
+          os_name=$(echo "$os_name" | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macos-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-${os_name,,}-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$version
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-${os_name,,}-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-$version
           fi
         shell: bash
       - name: Upload artifact
