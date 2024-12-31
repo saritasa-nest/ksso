@@ -49,5 +49,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ksso-${{ matrix.os }}-$version
+          name: ksso-${{ matrix.os }}-${{ env.version }}
           path: dist/ksso*
