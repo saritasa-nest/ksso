@@ -41,15 +41,15 @@ jobs:
         run: |
           source $GITHUB_ENV
           if [[ "${{ matrix.os }}" == "ubuntu-latest" || "${{ matrix.os }}" == "macos-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-${os_name,,}-$version
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-${os_name,,}-$version
           fi
         shell: bash
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ksso-${{ matrix.os }}-${{ env.version }}
+          name: ksso-${{ env.version }}
           path: dist/ksso*
   release:
     needs: build
