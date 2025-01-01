@@ -75,9 +75,9 @@ jobs:
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$version
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            poetry run pyinstaller   --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-arm-$version
+            poetry run pyinstaller   --target-architecture arm64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-arm-$version
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            poetry run pyinstaller   --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-x86_64-$version
+            poetry run pyinstaller   --target-architecture x86_64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-x86_64-$version
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-$version
           fi
