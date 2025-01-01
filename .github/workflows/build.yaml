@@ -1,5 +1,5 @@
 ---
-name: Build and package KSSO
+name: KSSO
 on:
   push:
     branches:
