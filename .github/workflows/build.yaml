@@ -38,6 +38,10 @@ jobs:
     env:
       POETRY_HOME: ~/.local
     steps:
+      - name: Create poetry cache folder
+        run: |
+          mkdir -p ${{ env.POETRY_HOME }}
+        shell: bash
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up python ${{ matrix.python-version }}
