@@ -49,6 +49,7 @@ jobs:
           path: |
             ~/.cache/pypoetry
             ~/Library/Caches/pypoetry
+            %LOCALAPPDATA%\pypoetry\Cache
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
