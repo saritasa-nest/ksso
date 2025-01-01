@@ -84,7 +84,7 @@ jobs:
           path: dist/ksso*
 
   # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-  # │   RELEASE JOB                                                                                                      │
+  # │   RELEASE JOB 2                                                                                                      │
   # │   ---                                                                                                              │
   # │                                                                                                                    │
   # │   The 'release' job packages artifacts created in the 'build' job and creates a GitHub Release.                    │
