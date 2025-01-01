@@ -15,7 +15,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          - windows-latest
+          # - windows-latest
         python-version:
           - 3.12
     timeout-minutes: 30
@@ -66,10 +66,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
-      - name: Debug files
+      - name: Rename artifacts for the release
         run: |
-          ls -la dist/
-          tree dist/
+          dist_path="dist"
+          for subdir in "$dist_path"/*; do
+            if [ -d "$subdir" ]; then
+              mv "$subdir"/* "$dist_path/"
+              rmdir "$subdir"
+            fi
+          done
+          ls -la "$dist_path"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -85,7 +91,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           version=${{ needs.build.outputs.version }}
-          ls -la dist/ksso-$version
-          for file in $(ls dist/ksso-$version); do
-            gh release upload v${version} dist/ksso-$version/$file --clobber
+          for file in $(ls dist/); do
+            gh release upload v${version} dist/$file --clobber
           done
