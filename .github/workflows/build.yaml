@@ -42,7 +42,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Cache Poetry dependencies
+      - name: Cache poetry dependencies
+        id: cache
         uses: actions/cache@v3
         with:
           path: |
@@ -52,9 +53,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-poetry-
       - name: Install poetry
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install poetry
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-ansi
       - name: Determine version
         id: version
