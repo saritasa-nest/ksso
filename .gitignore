@@ -4,6 +4,7 @@
 *.secrets.yaml
 *.zip
 .idea/
+.python-version
 .vscode
 TODO.md
 __pycache__
