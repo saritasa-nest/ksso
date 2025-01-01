@@ -49,7 +49,7 @@ jobs:
           path: |
             ~/.cache/pypoetry
             ~/Library/Caches/pypoetry
-            $HOME\AppData\Local\pypoetry\Cache
+            $HOME\\AppData\\Local\\pypoetry\\Cache
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
@@ -63,7 +63,7 @@ jobs:
         run: |
           ls -la ~/.cache/pypoetry || echo "NO folder"
           ls -la ~/Library/Caches/pypoetry || echo "NO folder"
-          ls -la $HOME\AppData\Local\pypoetry\Cache || echo "No Folder"
+          ls -la $HOME\\AppData\\Local\\pypoetry\\Cache || echo "No Folder"
           echo $HOME
         shell: bash
       - name: Determine version
