@@ -43,22 +43,23 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      # - name: Cache poetry dependencies
-      #   id: cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ~/.cache/pypoetry
-      #       ~/Library/Caches/pypoetry
-      #       C:\Users\runneradmin\AppData\Local\pypoetry\Cache
-      #     key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-poetry-
+      - name: Cache poetry dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/Library/Caches/pypoetry
+            C:\Users\runneradmin\AppData\Local\pypoetry\Cache
+          key: ${{ runner.os }}-${{ runner.arch }}-poetry-${{ hashFiles('**/poetry.lock')
+            }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-poetry-
       - name: Install poetry
         run: |
           python -m pip install poetry
       - name: Install dependencies
-        # if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-ansi
       - name: Determine version
         id: version
@@ -73,13 +74,13 @@ jobs:
           os_name=${{ runner.os }}
           os_name=$(echo "$os_name" | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-${{ runner.arch }}-$version
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            poetry run pyinstaller   --target-architecture arm64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-arm-$version
+            poetry run pyinstaller   --target-architecture arm64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-${{ runner.arch }}-$version
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            poetry run pyinstaller   --target-architecture x86_64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-x86_64-$version
+            poetry run pyinstaller   --target-architecture x86_64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-${{ runner.arch }}-$version
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-${{ runner.arch }}-$version
           fi
         shell: bash
       - name: Upload artifact
