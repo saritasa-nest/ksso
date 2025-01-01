@@ -35,8 +35,6 @@ jobs:
     timeout-minutes: 30
     outputs:
       version: ${{ steps.version.outputs.version }}
-    env:
-      POETRY_HOME: ~/.local
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -48,7 +46,10 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
-          path: ${{ env.POETRY_HOME }}
+          path: |
+            ~/.cache/pypoetry
+            ~/Library/Caches/pypoetry
+            $HOME\AppData\Local\pypoetry\Cache
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
@@ -58,6 +59,13 @@ jobs:
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-ansi
+      - name: Debug
+        run: |
+          ls -la ~/.cache/pypoetry
+          ls -la ~/Library/Caches/pypoetry
+          ls -la $HOME\AppData\Local\pypoetry\Cache
+          echo $HOME
+        shell: bash
       - name: Determine version
         id: version
         run: |
