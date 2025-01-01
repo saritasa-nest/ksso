@@ -61,9 +61,9 @@ jobs:
         run: poetry install --no-interaction --no-ansi
       - name: Debug
         run: |
-          ls -la ~/.cache/pypoetry
-          ls -la ~/Library/Caches/pypoetry
-          ls -la $HOME\AppData\Local\pypoetry\Cache
+          ls -la ~/.cache/pypoetry || echo "NO folder"
+          ls -la ~/Library/Caches/pypoetry || echo "NO folder"
+          ls -la $HOME\AppData\Local\pypoetry\Cache || echo "No Folder"
           echo $HOME
         shell: bash
       - name: Determine version
