@@ -74,13 +74,13 @@ jobs:
           os_name=$(echo ${{ runner.os }}   | tr '[:upper:]' '[:lower:]')
           os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            poetry run pyinstaller   --target-architecture arm64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch-$version
+            poetry run pyinstaller   --target-architecture arm64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            poetry run pyinstaller   --target-architecture x86_64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch-$version
+            poetry run pyinstaller   --target-architecture x86_64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch-$version
+            poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
           fi
         shell: bash
       - name: Upload artifact
