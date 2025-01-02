@@ -47,12 +47,17 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Install patchelf on Ubuntu
+      - name: Install patchelf on linux
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf
           patchelf --version
+      - name: Install ccache on macos
+        if: runner.os == 'Macos'
+        run: |
+          brew install ccache
+          ccache --version
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up python ${{ matrix.python-version }}
@@ -105,13 +110,43 @@ jobs:
           os_name=$(echo ${{ runner.os }}   | tr '[:upper:]' '[:lower:]')
           os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            poetry run nuitka --standalone --onefile --include-data-file=ksso/success_message.html=ksso --output-dir="dist" --output-filename=ksso-$os_name-$os_arch  ksso/main.py
+            poetry run nuitka \
+              --standalone \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            poetry run nuitka --macos-target-arch=arm64 --standalone --onefile --include-data-file=ksso/success_message.html=ksso --output-dir="dist" --output-filename=ksso-$os_name-$os_arch  ksso/main.py
+            poetry run nuitka \
+              --macos-target-arch=arm64 \
+              --standalone \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            poetry run nuitka --macos-target-arch=x86_64 --standalone --onefile --include-data-file=ksso/success_message.html=ksso --output-dir="dist" --output-filename=ksso-$os_name-$os_arch  ksso/main.py
+            poetry run nuitka \
+              --macos-target-arch=x86_64 \
+              --standalone \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            poetry run nuitka --standalone --onefile --include-data-file=ksso/success_message.html=ksso --output-dir="dist" --output-filename=ksso-$os_name-$os_arch  ksso/main.py
+            poetry run nuitka \
+              --standalone \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
           fi
         shell: bash
       - name: Upload artifact
