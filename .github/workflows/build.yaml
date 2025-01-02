@@ -2,9 +2,19 @@
 name: KSSO
 on:
   push:
+    paths:
+      - .github/workflows/build.yaml
+      - ksso/**
+      - poetry.lock
+      - pyproject.toml
     branches:
       - main
   pull_request:
+    paths:
+      - .github/workflows/build.yaml
+      - ksso/**
+      - poetry.lock
+      - pyproject.toml
 jobs:
 
   # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
