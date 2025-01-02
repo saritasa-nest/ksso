@@ -21,6 +21,7 @@ certifi = "^2024.12.14"     # Latest certifi
 pyinstaller = "^6.11.1"
 toml = "^0.10.2"
 pyjwt = "^2.10.1"
+nuitka = "^2.5.9"
 
 [tool.poetry.scripts]
 ksso = "ksso.main:main"  # Entry point to your script
