@@ -140,7 +140,7 @@ jobs:
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             poetry run nuitka \
-              --standalone \
+              --yes \            
               --disable-ccache \
               --onefile \
               --include-data-file=ksso/success_message.html=ksso \
