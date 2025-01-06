@@ -11,3 +11,4 @@ __pycache__
 build/
 dist/
 ksso.spec
+nuitka-crash-report.xml
