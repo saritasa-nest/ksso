@@ -38,9 +38,9 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-latest
-          - windows-latest
-          - macos-13
+          # - ubuntu-latest
+          # - windows-latest
+          # - macos-13
         python-version:
           - 3.12
     timeout-minutes: 30
@@ -119,6 +119,12 @@ jobs:
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
+              --macos-create-app-bundle \
+              --macos-signed-app-name=com.saritasa.ksso \
+              --macos-app-name=KSSO \
+              --macos-app-version="$version" \
               --macos-target-arch=arm64 \
               --disable-ccache \
               --onefile \
