@@ -111,30 +111,27 @@ jobs:
           os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             poetry run nuitka \
-              --standalone \
               --disable-ccache \
               --onefile \
-              --include-data-file=ksso/success_message.html=ksso \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             poetry run nuitka \
               --macos-target-arch=arm64 \
-              --standalone \
               --disable-ccache \
               --onefile \
-              --include-data-file=ksso/success_message.html=ksso \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
             poetry run nuitka \
               --macos-target-arch=x86_64 \
-              --standalone \
               --disable-ccache \
               --onefile \
-              --include-data-file=ksso/success_message.html=ksso \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
