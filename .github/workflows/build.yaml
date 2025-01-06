@@ -143,7 +143,7 @@ jobs:
               --assume-yes-for-downloads \
               --disable-ccache \
               --onefile \
-              --include-data-file=ksso/success_message.html=ksso \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
