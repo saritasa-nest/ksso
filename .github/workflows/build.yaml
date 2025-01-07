@@ -47,17 +47,6 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Install patchelf on linux
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y patchelf
-          patchelf --version
-      - name: Install ccache on macos
-        if: runner.os == 'Macos'
-        run: |
-          brew install ccache
-          ccache --version
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up python ${{ matrix.python-version }}
@@ -72,8 +61,7 @@ jobs:
             ~/.cache/pypoetry
             ~/Library/Caches/pypoetry
             C:\Users\runneradmin\AppData\Local\pypoetry\Cache
-          key: ${{ runner.os }}-${{ runner.arch }}-poetry-${{ hashFiles('**/poetry.lock')
-            }}
+          key: ${{ runner.os }}-${{ runner.arch }}-poetry-${{ hashFiles('**/poetry.lock')}}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-poetry-
       - name: Install poetry
@@ -88,28 +76,16 @@ jobs:
           version=$(poetry version --short)
           echo "version=$version" >> $GITHUB_ENV
           echo "::set-output name=version::$version"
-        shell: bash
-      # - name: Build binary with pyinstaller
-      #   run: |
-      #     source $GITHUB_ENV
-      #     os_name=$(echo ${{ runner.os }}   | tr '[:upper:]' '[:lower:]')
-      #     os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
-      #     if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-      #       poetry run pyinstaller --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
-      #     elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-      #       poetry run pyinstaller   --target-architecture arm64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
-      #     elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-      #       poetry run pyinstaller   --target-architecture x86_64 --add-data "ksso/success_message.html:ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
-      #     elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-      #       poetry run pyinstaller --add-data "ksso/success_message.html;ksso" --onefile ksso/main.py --name ksso-$os_name-$os_arch
-      #     fi
-      #   shell: bash
+        shell: bash      
       - name: Build binary with nuitka
         run: |
           source $GITHUB_ENV
           os_name=$(echo ${{ runner.os }}   | tr '[:upper:]' '[:lower:]')
           os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y patchelf
+            patchelf --version
             poetry run nuitka \
               --follow-imports \
               --include-package-data=ksso \
@@ -133,6 +109,8 @@ jobs:
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
+            brew install ccache
+            ccache --version
             poetry run nuitka \
               --follow-imports \
               --include-package-data=ksso \
@@ -146,6 +124,8 @@ jobs:
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            brew install ccache
+            ccache --version
             poetry run nuitka \
               --follow-imports \
               --include-package-data=ksso \
@@ -198,6 +178,12 @@ jobs:
             fi
           done
           ls -la "$dist_path"
+      - name: Generate SHA256SUMS file
+        run: |
+          dist_path="dist"
+          cd "$dist_path"
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
       - name: Create release
         uses: actions/create-release@v1
         env:
