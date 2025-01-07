@@ -124,8 +124,6 @@ jobs:
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            brew install ccache
-            ccache --version
             poetry run nuitka \
               --follow-imports \
               --include-package-data=ksso \
