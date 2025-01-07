@@ -132,7 +132,6 @@ jobs:
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
-        dist/ksso-$os_name-$os_arch
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
             poetry run nuitka \
               --follow-imports \
