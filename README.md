@@ -135,7 +135,7 @@ Add the KSSO folder to your PATH:
 ```
 
 Antivirus software may flag the executable due to the bundling process. Add the file to exceptions if necessary
-![Antivirus Exception on Windows](.docs\windows-antivirus-exception.png)
+![Antivirus Exception on Windows](.docs/windows-antivirus-exception.png)
 
 
 ## Local Development
