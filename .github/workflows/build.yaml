@@ -111,6 +111,8 @@ jobs:
           os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
               --disable-ccache \
               --onefile \
               --include-data-file=ksso/success_message.html=ksso/success_message.html \
@@ -121,8 +123,6 @@ jobs:
             poetry run nuitka \
               --follow-imports \
               --include-package-data=ksso \
-              --macos-create-app-bundle \
-              --macos-signed-app-name=com.saritasa.ksso \
               --macos-app-name=KSSO \
               --macos-app-version="$version" \
               --macos-target-arch=arm64 \
@@ -132,8 +132,13 @@ jobs:
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
               ksso/main.py
+        dist/ksso-$os_name-$os_arch
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
             poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
+              --macos-app-name=KSSO \
+              --macos-app-version="$version" \
               --macos-target-arch=x86_64 \
               --disable-ccache \
               --onefile \
@@ -143,6 +148,8 @@ jobs:
               ksso/main.py
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
               --assume-yes-for-downloads \
               --disable-ccache \
               --onefile \
