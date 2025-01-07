@@ -132,6 +132,7 @@ Add the KSSO folder to your PATH:
     [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";C:\Program Files\ksso",
     "Machine"
 )
+[System.Environment]::GetEnvironmentVariable("PATH", "Machine") -split ";"
 ```
 
 Antivirus software may flag the executable due to the bundling process. Add the file to exceptions if necessary
