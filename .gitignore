@@ -4,9 +4,11 @@
 *.secrets.yaml
 *.zip
 .idea/
+.python-version
 .vscode
 TODO.md
 __pycache__
 build/
 dist/
 ksso.spec
+nuitka-crash-report.xml

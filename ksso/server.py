@@ -7,12 +7,26 @@ import jwt
 import requests
 from flask import Flask, redirect, request
 
-# Use PyInstaller temp directory if bundled
+# Use Nuitka/PyInstaller temp directory if bundled
 # If the script is running as a bundled executable (created by PyInstaller),
 # 'sys.frozen' is set to True, and 'sys._MEIPASS' provides the path to the
 # temporary directory where PyInstaller extracts bundled resources.
 # Otherwise, use the current working directory as the base path.
-base_path = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.abspath(".")
+def get_base_path():
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller-like temp folder (if used)
+        return sys._MEIPASS
+    elif getattr(sys, 'frozen', False):  # Nuitka or PyInstaller binary
+        # Nuitka-compiled binary path
+        return os.path.dirname(sys.executable)
+    elif hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
+        # Inside a venv
+        return os.path.dirname(os.path.abspath(__file__))
+    else:
+        # Default to the script's directory
+        return os.path.dirname(os.path.abspath(__file__))
+
+base_path = get_base_path()
 
 app = Flask(__name__)
 
@@ -99,7 +113,7 @@ def callback():
 
     # Pass token and session name to the main thread
     app.token_queue.put((access_token, session_name))
-    html_file_path = os.path.join(base_path, "ksso", "success_message.html")
+    html_file_path = os.path.join(base_path, "success_message.html")
     with open(html_file_path, "r") as file:
         html_content = file.read()
 
