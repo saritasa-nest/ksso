@@ -48,9 +48,9 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Cache poetry dependencies
@@ -76,7 +76,8 @@ jobs:
           version=$(poetry version --short)
           echo "version=$version" >> $GITHUB_ENV
           echo "::set-output name=version::$version"
-        shell: bash      
+        shell: bash
+        # compile python source into shippable single-file binary.
       - name: Build binary with nuitka
         run: |
           source $GITHUB_ENV
