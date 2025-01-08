@@ -75,7 +75,7 @@ jobs:
         run: |
           version=$(poetry version --short)
           echo "version=$version" >> $GITHUB_ENV
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
         shell: bash
         # compile python source into shippable single-file binary.
       - name: Build binary with nuitka
