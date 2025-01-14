@@ -1,6 +1,6 @@
 ### Summary
 
-Task: [MBARR-???](https://saritasa.atlassian.net/browse/SD-???)
+Task: [SD-???](https://saritasa.atlassian.net/browse/SD-???)
 
 <!--
 Description should contain link to valid task in Jira, short description of the implemented feature.
