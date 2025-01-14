@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from sys import exit
 
 import requests
 import toml
