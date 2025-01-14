@@ -1,0 +1,202 @@
+---
+name: KSSO
+on:
+  push:
+    paths:
+      - .github/workflows/build.yaml
+      - ksso/**
+      - poetry.lock
+      - pyproject.toml
+    branches:
+      - main
+  pull_request:
+    paths:
+      - .github/workflows/build.yaml
+      - ksso/**
+      - poetry.lock
+      - pyproject.toml
+jobs:
+
+  # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  # │   BUILD JOB                                                                                                        │
+  # │   ---                                                                                                              │
+  # │                                                                                                                    │
+  # │   The 'build' job compiles and packages the KSSO py application for different OS and Python versions.              │
+  # │   It uses a matrix strategy to run builds.                                                                         │
+  # │   The reason we need a matrix build, because we are using pyinstaller to produce executable binary                 │
+  # │   and in order to do so, it should be executed in the target OS.                                                   │
+  # │                                                                                                                    │
+  # │   Outputs:                                                                                                         │
+  # │   - `version`: Extracted from the project version and passed to the `release` job.                                 │
+  # │                                                                                                                    │
+  # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+          - macos-13
+        python-version:
+          - 3.12
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Cache poetry dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/Library/Caches/pypoetry
+            C:\Users\runneradmin\AppData\Local\pypoetry\Cache
+          key: ${{ runner.os }}-${{ runner.arch }}-poetry-${{ hashFiles('**/poetry.lock')}}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-poetry-
+      - name: Install poetry
+        run: |
+          python -m pip install poetry
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-ansi
+      - name: Determine version
+        id: version
+        run: |
+          version=$(poetry version --short)
+          echo "version=$version" >> $GITHUB_ENV
+          echo "version=$version" >> $GITHUB_OUTPUT
+        shell: bash
+        # compile python source into shippable single-file binary.
+      - name: Build binary with nuitka
+        run: |
+          source $GITHUB_ENV
+          os_name=$(echo ${{ runner.os }}   | tr '[:upper:]' '[:lower:]')
+          os_arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
+          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y patchelf
+            patchelf --version
+            poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
+              --macos-app-name=KSSO \
+              --macos-app-version="$version" \
+              --macos-target-arch=arm64 \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
+          elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
+            brew install ccache
+            ccache --version
+            poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
+              --macos-app-name=KSSO \
+              --macos-app-version="$version" \
+              --macos-target-arch=x86_64 \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            poetry run nuitka \
+              --follow-imports \
+              --include-package-data=ksso \
+              --assume-yes-for-downloads \
+              --disable-ccache \
+              --onefile \
+              --include-data-file=ksso/success_message.html=ksso/success_message.html \
+              --output-dir="dist" \
+              --output-filename=ksso-$os_name-$os_arch \
+              ksso/main.py
+          fi
+        shell: bash
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ksso-${{ matrix.os }}-${{ env.version }}
+          path: dist/ksso*
+
+  # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  # │   RELEASE JOB                                                                                                      │
+  # │   ---                                                                                                              │
+  # │                                                                                                                    │
+  # │   The 'release' job packages artifacts created in the 'build' job and creates a GitHub Release.                    │
+  # │   It depends on the 'build' job and uses its outputs and artifacts.                                                │
+  # │   Key Functions:                                                                                                   │
+  # │   - Downloading build artifacts.                                                                                   │
+  # │   - Renaming and organizing artifacts for the release.                                                             │
+  # │   - Creating a GitHub Release using the extracted version.                                                         │
+  # │   - Uploading artifacts as release assets.                                                                         │
+  # │                                                                                                                    │
+  # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+  release:
+    needs: build
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Rename artifacts for the release
+        run: |
+          dist_path="dist"
+          for subdir in "$dist_path"/*; do
+            if [ -d "$subdir" ]; then
+              mv "$subdir"/* "$dist_path/"
+              rmdir "$subdir"
+            fi
+          done
+          ls -la "$dist_path"
+      - name: Generate SHA256SUMS file
+        run: |
+          dist_path="dist"
+          cd "$dist_path"
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.build.outputs.version }}
+          release_name: ksso v${{ needs.build.outputs.version }}
+          draft: false
+          prerelease: false
+      - name: Upload release files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |-
+          version=${{ needs.build.outputs.version }}
+          for file in $(ls dist/); do
+            gh release upload v${version} dist/$file --clobber
+          done
