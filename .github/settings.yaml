@@ -1,0 +1,43 @@
+labels:
+  - name: Needs Review
+    color: 008000
+    description: Ready for review
+
+  - name: wip
+    color: cc0000
+    description: In development
+
+  - name: enhancement
+    color: F0F8FF
+    description: New feature or request
+
+  - name: docs
+    color: EED9C4
+    description: Improvements or additions to documentation
+
+  - name: bug
+    color: 848482
+    description: Something isn't working
+
+  - name: urgent
+    color: C41E3A
+    description: Urgently for review
+
+  - name: env=dev
+    color: FFBF00
+    description: Development environment
+
+  - name: env=staging
+    color: FFBF00
+    description: Staging environment
+
+  - name: env=prod
+    color: FFBF00
+    description: Production environment
+
+autolinks:
+  - key_prefix: SD
+    url_template: https://saritasa.atlassian.net/browse/SD-<num>
+
+pr_workflow_type:
+  devops

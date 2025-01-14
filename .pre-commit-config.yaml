@@ -1,0 +1,97 @@
+---
+# if you get errors
+# The unauthenticated git protocol on port 9418 is no longer supported.
+# solution:
+# git config --global url."https://".insteadOf git://
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-shebang-scripts-are-executable
+      - id: detect-aws-credentials
+        args:
+          - --allow-missing-credentials
+      - id: end-of-file-fixer
+      - id: file-contents-sorter
+        files: \.(gitignore|ignore)
+        args:
+          - --unique
+      - id: no-commit-to-branch
+      - id: mixed-line-ending
+        args:
+          - --fix=auto
+      - id: trailing-whitespace
+        args:
+          - --markdown-linebreak-ext=md
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        files: \.(html|json|markdown|md|)$
+        additional_dependencies:
+          - prettier
+          - prettier-plugin-sh
+          - prettier-plugin-toml
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.13.0
+    hooks:
+      - id: markdownlint-cli2
+        name: markdownlint-cli2
+        description: Checks the style of Markdown/CommonMark files.
+        language: node
+        types:
+          - markdown
+        minimum_pre_commit_version: 0.15.0
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        stages:
+          - commit
+          - push
+        args:
+          - --ignore-words=.codespellignore
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args:
+          - --config-file
+          - .yamllint
+  - repo: https://github.com/lyz-code/yamlfix/
+    rev: 1.16.0
+    hooks:
+      - id: yamlfix
+        additional_dependencies:
+          - maison<2.0.0
+        args:
+          - --config-file
+          - .yamlfix.toml
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear==24.2.6
+          - flake8-comprehensions
+          - flake8-simplify
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args:
+          - --line-length=100
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args:
+          - --profile
+          - black
+ci:
+  autoupdate_schedule: monthly

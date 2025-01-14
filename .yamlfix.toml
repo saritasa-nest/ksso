@@ -1,0 +1,4 @@
+# This is yamlfix configuration file
+# https://lyz-code.github.io/yamlfix/#configuration
+
+sequence_style = "block_style"
