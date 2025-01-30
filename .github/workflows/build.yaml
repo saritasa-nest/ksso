@@ -92,6 +92,7 @@ jobs:
               --include-package-data=ksso \
               --disable-ccache \
               --onefile \
+              --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
               --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
@@ -105,6 +106,7 @@ jobs:
               --macos-target-arch=arm64 \
               --disable-ccache \
               --onefile \
+              --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
               --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
@@ -120,6 +122,7 @@ jobs:
               --macos-target-arch=x86_64 \
               --disable-ccache \
               --onefile \
+              --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
               --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
@@ -131,6 +134,7 @@ jobs:
               --assume-yes-for-downloads \
               --disable-ccache \
               --onefile \
+              --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
               --include-data-file=ksso/success_message.html=ksso/success_message.html \
               --output-dir="dist" \
               --output-filename=ksso-$os_name-$os_arch \
