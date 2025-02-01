@@ -22,7 +22,6 @@ import webbrowser
 from queue import Queue
 from sys import exit
 
-import jwt
 import requests
 
 from ksso.aws import (
@@ -112,10 +111,6 @@ def main():
 
     # Wait for the token and session name to be available in the queue
     access_token, session_name = token_queue.get()
-    if os.environ.get("DEBUG"):
-        decoded_token = jwt.decode(access_token, options={"verify_signature": False})
-        print(decoded_token)
-
     # Assume AWS role using the obtained access token and session name
     credentials = assume_aws_role_with_keycloak_token(access_token, aws_role_arn, session_name)
 

@@ -7,28 +7,33 @@ import jwt
 import requests
 from flask import Flask, redirect, request
 
+from ksso.exceptions import KCError
+
+
 # Use Nuitka/PyInstaller temp directory if bundled
 # If the script is running as a bundled executable (created by PyInstaller),
 # 'sys.frozen' is set to True, and 'sys._MEIPASS' provides the path to the
 # temporary directory where PyInstaller extracts bundled resources.
 # Otherwise, use the current working directory as the base path.
 def get_base_path():
-    if hasattr(sys, '_MEIPASS'):
+    if hasattr(sys, "_MEIPASS"):
         # PyInstaller-like temp folder (if used)
         return sys._MEIPASS
-    elif getattr(sys, 'frozen', False):  # Nuitka or PyInstaller binary
+    elif getattr(sys, "frozen", False):  # Nuitka or PyInstaller binary
         # Nuitka-compiled binary path
         return os.path.dirname(sys.executable)
-    elif hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
+    elif hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix:
         # Inside a venv
         return os.path.dirname(os.path.abspath(__file__))
     else:
         # Default to the script's directory
         return os.path.dirname(os.path.abspath(__file__))
 
+
 base_path = get_base_path()
 
 app = Flask(__name__)
+logger = logging.getLogger("error")
 
 # Suppress Flask logs as we want to output JSON text in the console
 # that is later on will be parsed by aws-vault via credentials process output
@@ -111,10 +116,46 @@ def callback():
         or decoded_token.get("sub")
     )
 
+    try:
+        resource_access = decoded_token.get("resource_access", False)
+        authorize_access(
+            access=resource_access,
+            client_id=app.config["CLIENT_ID"],
+            role=app.config["AWS_ROLE_ARN"],
+        )
+        app.token_queue.put((access_token, session_name))
+        html_file_path = os.path.join(base_path, "success_message.html")
+    except KCError as e:
+        logger.error(e)
+        app.token_queue.put(("AuthFailure", "AuthFailure"))
+        html_file_path = os.path.join(base_path, "failure_access_prohibited_message.html")
+
     # Pass token and session name to the main thread
-    app.token_queue.put((access_token, session_name))
-    html_file_path = os.path.join(base_path, "success_message.html")
     with open(html_file_path, "r") as file:
         html_content = file.read()
 
     return html_content
+
+
+def authorize_access(access: dict, client_id: str, role: str) -> bool:
+    """Authorize the request.
+
+    Perform the check that the client_id exists in the resource_access dictionary
+    of the access_token and that the specified role is present in its roles list.
+
+    Returns:
+        bool: True  (the user should be granted access to the aws role)
+              False (the user should not be granted access to the aws role)
+    """
+    if not isinstance(access, dict):
+        raise KCError("Invalid resource_access structure of the access token")
+
+    if client_id not in access:
+        raise KCError(f"You're not authorized to access client ID {client_id}")
+
+    if role not in access[client_id].get("roles", []):
+        raise KCError(
+            f"You're not authorized to assume role {role} which is defined in Client ID {client_id}"
+        )
+
+    return True
