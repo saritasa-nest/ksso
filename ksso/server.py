@@ -137,10 +137,15 @@ def callback():
     return html_content
 
 
-def authorize_access(access: dict, client_id: str, role: str):
-    """
-    Validate that the client_id exists in the resource_access dictionary
-    and that the specified role is present in its roles list.
+def authorize_access(access: dict, client_id: str, role: str) -> bool:
+    """Authorize the request.
+
+    Perform the check that the client_id exists in the resource_access dictionary
+    of the access_token and that the specified role is present in its roles list.
+
+    Returns:
+        bool: True  (the user should be granted access to the aws role)
+              False (the user should not be granted access to the aws role)
     """
     if not isinstance(access, dict):
         raise KCError("Invalid resource_access structure of the access token")
