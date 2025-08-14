@@ -55,6 +55,14 @@ region = us-west-2
 credential_process = ksso --json --client-id aws-developers --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-developers-role
 ```
 
+if you want to support multiple keycloak instances, you will need to create a separate config file for each instance and pass the path to the config file using the `--config` flag.
+
+```ini
+[profile keycloak-2/developers]
+region=us-east-1
+credential_process=/usr/local/bin/ksso --config /home/dmitry/.keycloak_2_ksso_config.toml --json --client-id aws-devops --aws-role-arn arn:aws:iam::333444555666:role/prod-keycloak-sso-developers-role
+```
+
 ## Use
 
 ### Retrieve AWS IAM Shell Credentials
