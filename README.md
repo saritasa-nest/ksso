@@ -1,4 +1,3 @@
-
 # KSSO
 
 Keycloak AWS OIDC IAM SSO Helper
@@ -138,7 +137,6 @@ Add the KSSO folder to your PATH:
 Antivirus software may flag the executable due to the bundling process. Add the file to exceptions if necessary
 ![Antivirus Exception on Windows](.docs/windows-antivirus-exception.png)
 
-
 ## Local Development
 
 ### Requirements
@@ -170,15 +168,27 @@ Antivirus software may flag the executable due to the bundling process. Add the 
        --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
    ```
 
+4. Compile binary
+
+   ```sh
+   poetry run nuitka \
+       --onefile \
+       --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
+       --include-data-file=ksso/success_message.html=ksso/success_message.html \
+       --output-dir="dist" \
+       --output-filename=ksso \
+       ksso/main.py
+   ```
+
 ## Debugging
 
-### Linux/macOS
+### On Linux/macOS
 
 ```sh
 export DEBUG=1
 ```
 
-### Windows
+### On Windows
 
 ```sh
 $env:DEBUG = "1"

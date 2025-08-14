@@ -34,6 +34,7 @@ class AWSCredentials:
         Return the AWS credentials in JSON format.
         """
         aws_credentials = {
+            "Version": 1,
             "AccessKeyId": self.AccessKeyId,
             "SecretAccessKey": self.SecretAccessKey,
             "SessionToken": self.SessionToken,
