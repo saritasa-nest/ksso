@@ -89,6 +89,17 @@ jobs:
             patchelf --version
             poetry run nuitka \
               --follow-imports \
+              --include-package=keyring \
+              --include-package=keyring.backends \
+              --include-module=keyring.util.platform_ \
+              --include-package=keyring.backends.SecretService \
+              --include-package=keyring.backends.macOS \
+              --include-package=keyring.backends.Windows \
+              --include-package=keyring.backends.chainer \
+              --include-package=keyring.backends.fail \
+              --include-package=keyring.backends.kwallet \
+              --include-module=keyring.backends \
+              --include-module=keyring.util.platform_ \
               --include-package-data=ksso \
               --disable-ccache \
               --onefile \
@@ -100,6 +111,17 @@ jobs:
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             poetry run nuitka \
               --follow-imports \
+              --include-package=keyring \
+              --include-package=keyring.backends \
+              --include-module=keyring.util.platform_ \
+              --include-package=keyring.backends.SecretService \
+              --include-package=keyring.backends.macOS \
+              --include-package=keyring.backends.Windows \
+              --include-package=keyring.backends.chainer \
+              --include-package=keyring.backends.fail \
+              --include-package=keyring.backends.kwallet \
+              --include-module=keyring.backends \
+              --include-module=keyring.util.platform_ \
               --include-package-data=ksso \
               --macos-app-name=KSSO \
               --macos-app-version="$version" \
@@ -116,6 +138,17 @@ jobs:
             ccache --version
             poetry run nuitka \
               --follow-imports \
+              --include-package=keyring \
+              --include-package=keyring.backends \
+              --include-module=keyring.util.platform_ \
+              --include-package=keyring.backends.SecretService \
+              --include-package=keyring.backends.macOS \
+              --include-package=keyring.backends.Windows \
+              --include-package=keyring.backends.chainer \
+              --include-package=keyring.backends.fail \
+              --include-package=keyring.backends.kwallet \
+              --include-module=keyring.backends \
+              --include-module=keyring.util.platform_ \
               --include-package-data=ksso \
               --macos-app-name=KSSO \
               --macos-app-version="$version" \
@@ -130,6 +163,17 @@ jobs:
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             poetry run nuitka \
               --follow-imports \
+              --include-package=keyring \
+              --include-package=keyring.backends \
+              --include-module=keyring.util.platform_ \
+              --include-package=keyring.backends.SecretService \
+              --include-package=keyring.backends.macOS \
+              --include-package=keyring.backends.Windows \
+              --include-package=keyring.backends.chainer \
+              --include-package=keyring.backends.fail \
+              --include-package=keyring.backends.kwallet \
+              --include-module=keyring.backends \
+              --include-module=keyring.util.platform_ \
               --include-package-data=ksso \
               --assume-yes-for-downloads \
               --disable-ccache \
