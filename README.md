@@ -139,15 +139,15 @@ Install [aws-vault](https://github.com/99designs/aws-vault/tree/master?tab=readm
 ### Linux
 
 ```sh
-sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.0/ksso-linux-0.1.0 -o /usr/local/bin/ksso \
-  && sudo chmod +x /usr/local/bin/ksso
+sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.2/ksso-linux-x64 -o /usr/local/bin/ksso && sudo chmod +x /usr/local/bin/ksso
 ```
 
 ### macOS
 
 ```sh
-sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.0/ksso-macos-arm64 -o /usr/local/bin/ksso \
+sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.2/ksso-macos-arm64 -o /usr/local/bin/ksso \
   && sudo chmod +x /usr/local/bin/ksso
+
 ```
 
 On the first run, you must enable the app under **Settings > Privacy & Security** as shown below:
@@ -159,7 +159,7 @@ Run the following commands in an Administrator PowerShell:
 
 ```sh
 Set-ExecutionPolicy RemoteSigned
-$url = "https://github.com/saritasa-nest/ksso/releases/download/v0.1.0/ksso-windows-x64.exe"
+$url = "https://github.com/saritasa-nest/ksso/releases/download/v0.1.2/ksso-windows-x64.exe"
 $output = "$env:USERPROFILE\Downloads\ksso-windows-x64.exe"
 Invoke-WebRequest -Uri $url -OutFile $output
 
