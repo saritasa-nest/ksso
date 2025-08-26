@@ -24,13 +24,14 @@ from sys import exit
 
 import requests
 
+from ksso import credstore
 from ksso.aws import (
+    AWSCredentials,
     assume_aws_role_with_keycloak_token,
     export_aws_credentials_env,
     export_aws_credentials_json,
 )
 from ksso.config import ConfigError, load_config
-from ksso.credstore import load_credentials, logout, save_credentials
 from ksso.server import app
 
 DEFAULT_CONFIG_PATH = os.path.expanduser("~/.ksso_config.toml")
@@ -49,6 +50,56 @@ logging.getLogger("boto3").setLevel(logging.WARNING)
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("ksso").setLevel(logging.WARNING)
+
+
+def logout(client_id: str, aws_role_arn: str) -> None:
+    """Logout and remove cached credentials."""
+    if bool(client_id) != bool(aws_role_arn):
+        logger.error("--client-id and --aws-role-arn must be specified together")
+        exit(1)
+
+    removed_credentials = credstore.logout(client_id, aws_role_arn)
+    if removed_credentials > 0:
+        if client_id and aws_role_arn:
+            print(f"Removed credentials for {client_id} and role {aws_role_arn}")
+        else:
+            print(f"Removed {removed_credentials} credential(s)")
+    else:
+        print("No cached credentials found to remove")
+    return
+
+
+def login(config: str, client_id: str, aws_role_arn: str) -> AWSCredentials:
+    """
+    Login and get AWS credentials.
+    """
+    logger.info("No valid cached credentials found, starting authentication flow...")
+    try:
+        ksso_config = load_config(config)
+    except ConfigError as e:
+        logger.error(e)
+        exit(1)
+    except (requests.RequestException, requests.exceptions.HTTPError, ValueError) as e:
+        logger.error(f"Error while connecting to Keycloak: {e}")
+        exit(1)
+
+    # Store dynamic values in Flask app config
+    app.config["KEYCLOAK_URL"] = ksso_config.sso_token_service_url
+    app.config["REDIRECT_URI"] = ksso_config.sso_redirect_url
+    app.config["CLIENT_ID"] = client_id
+    app.config["AWS_ROLE_ARN"] = aws_role_arn
+
+    # Start Flask app in a separate thread
+    threading.Thread(target=lambda: app.run(port=ksso_config.sso_agent_port), daemon=True).start()
+
+    # Open the browser for authentication
+    webbrowser.open(f"http://localhost:{ksso_config.sso_agent_port}/")
+
+    # Wait for the token and session name to be available in the queue
+    access_token, session_name = token_queue.get()
+
+    # Assume AWS role using the obtained access token and session name
+    return assume_aws_role_with_keycloak_token(access_token, aws_role_arn, session_name)
 
 
 def main():
@@ -132,61 +183,17 @@ def main():
 
     # Handle logout command
     if args.command == "logout":
-        if (args.aws_role_arn and not args.client_id) or (not args.aws_role_arn and args.client_id):
-            logger.error("--aws-role-arn and --client-id must be specified together")
-            exit(1)
-
-        removed_credentials = logout(args.client_id, args.aws_role_arn)
-        if removed_credentials > 0:
-            if args.client_id and args.aws_role_arn:
-                print(f"Removed credentials for {args.client_id} and role {args.aws_role_arn}")
-            elif args.client_id:
-                print(f"Removed {removed_credentials} credential(s) for client {args.client_id}")
-            else:
-                print(f"Removed {removed_credentials} credential(s)")
-        else:
-            print("No cached credentials found to remove")
-        return
+        return logout(args.client_id, args.aws_role_arn)
 
     # Handle login command (default)
     # First try to get credentials from keyring cache
-    credentials = load_credentials(args.client_id, args.aws_role_arn)
+    credentials = credstore.load_credentials(args.client_id, args.aws_role_arn)
 
     # If no valid cached credentials, proceed with normal auth flow
+    # and save the new credentials to keyring
     if not credentials:
-        logger.info("No valid cached credentials found, starting authentication flow...")
-        try:
-            ksso_config = load_config(args.config)
-        except ConfigError as e:
-            logger.error(e)
-            exit(1)
-        except (requests.RequestException, requests.exceptions.HTTPError, ValueError) as e:
-            logger.error(f"Error while connecting to Keycloak: {e}")
-            exit(1)
-
-        # Store dynamic values in Flask app config
-        client_id, aws_role_arn = args.client_id, args.aws_role_arn
-        app.config["KEYCLOAK_URL"] = ksso_config.sso_token_service_url
-        app.config["REDIRECT_URI"] = ksso_config.sso_redirect_url
-        app.config["CLIENT_ID"] = client_id
-        app.config["AWS_ROLE_ARN"] = aws_role_arn
-
-        # Start Flask app in a separate thread
-        threading.Thread(
-            target=lambda: app.run(port=ksso_config.sso_agent_port), daemon=True
-        ).start()
-
-        # Open the browser for authentication
-        webbrowser.open(f"http://localhost:{ksso_config.sso_agent_port}/")
-
-        # Wait for the token and session name to be available in the queue
-        access_token, session_name = token_queue.get()
-
-        # Assume AWS role using the obtained access token and session name
-        credentials = assume_aws_role_with_keycloak_token(access_token, aws_role_arn, session_name)
-
-        # Save the credentials to keyring
-        save_credentials(client_id, aws_role_arn, credentials)
+        credentials = login(args.config, args.client_id, args.aws_role_arn)
+        credstore.save_credentials(args.client_id, args.aws_role_arn, credentials)
 
     # Output credentials based on CLI args
     if args.json:

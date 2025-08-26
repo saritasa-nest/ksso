@@ -18,7 +18,7 @@ def get_cache_key(client_id: str, role_arn: str) -> str:
     return f"{client_id}||{role_arn}"
 
 
-def load_credentials(client_id: str, role_arn: str) -> Optional[AWSCredentials]:
+def load_credentials(client_id: str, role_arn: str) -> AWSCredentials | None:
     """Load cached credentials from the keyring if they exist and are not expired.
 
     Returns:
