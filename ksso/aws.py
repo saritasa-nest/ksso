@@ -120,7 +120,7 @@ def export_aws_credentials_env(credentials: AWSCredentials):
         This function is typically used in the following way to simplify
         credential management. Example usage in a Bash shell:
 
-            source <(ksso --env \
+            source <(ksso login --env \
                 --client-id client-name-aws \
                 --aws-role-arn arn:aws:iam::account_id:role/some-role-name)
 

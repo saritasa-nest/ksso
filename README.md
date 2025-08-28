@@ -12,8 +12,10 @@ A simple console tool to authenticate into AWS via OIDC using [credential_proces
 
 ### Example Usage
 
+#### Login and get credentials
+
 ```sh
-ksso \
+ksso login \
     --json \
     --client-id aws-devops \
     --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
@@ -24,6 +26,16 @@ ksso \
     "SessionToken": "HIDDEN",
     "Expiration": "2025-01-07T00:24:52+00:00"
 }
+```
+
+#### Logout and clear cached credentials
+
+```sh
+# Remove all cached credentials
+ksso logout
+
+# Remove credentials for a specific client and role
+ksso logout --client-id aws-devops --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
 ```
 
 ## Configuration
@@ -48,11 +60,19 @@ Update your `~/.aws/config` file to include profiles for your Keycloak roles:
 ```ini
 [profile keycloak/administrators]
 region = us-west-2
-credential_process = ksso --json --client-id aws-devops --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
+credential_process = ksso login --json --client-id aws-devops --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
 
 [profile keycloak/developers]
 region = us-west-2
-credential_process = ksso --json --client-id aws-developers --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-developers-role
+credential_process = ksso login --json --client-id aws-developers --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-developers-role
+```
+
+if you want to support multiple keycloak instances, you will need to create a separate config file for each instance and pass the path to the config file using the `--config` flag.
+
+```ini
+[profile keycloak-2/developers]
+region=us-east-1
+credential_process=/usr/local/bin/ksso login --config /home/dmitry/.keycloak_2_ksso_config.toml --json --client-id aws-devops --aws-role-arn arn:aws:iam::333444555666:role/prod-keycloak-sso-developers-role
 ```
 
 if you want to support multiple keycloak instances, you will need to create a separate config file for each instance and pass the path to the config file using the `--config` flag.
@@ -64,6 +84,32 @@ credential_process=/usr/local/bin/ksso --config /home/dmitry/.keycloak_2_ksso_co
 ```
 
 ## Use
+
+### Commands
+
+#### `ksso login`
+
+Authenticate and retrieve AWS IAM credentials. This is the default command if none is specified.
+
+Options:
+
+- `--json`: Output credentials in JSON format (default)
+- `--env`: Output credentials as environment variables
+- `--config`: Path to config file (default: `~/.ksso_config.toml`)
+- `--client-id`: Keycloak client ID (required)
+- `--aws-role-arn`: AWS IAM Role ARN to assume (required)
+- `-v, --verbose`: Enable verbose logging
+
+#### `ksso logout`
+
+Remove cached credentials from the keyring.
+
+Options:
+
+- `--client-id`: Keycloak client ID (must be used with `--aws-role-arn`)
+- `--aws-role-arn`: AWS IAM Role ARN (must be used with `--client-id`)
+
+If no arguments are provided, all cached credentials will be removed.
 
 ### Retrieve AWS IAM Shell Credentials
 
@@ -101,15 +147,15 @@ Install [aws-vault](https://github.com/99designs/aws-vault/tree/master?tab=readm
 ### Linux
 
 ```sh
-sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.0/ksso-linux-0.1.0 -o /usr/local/bin/ksso \
-  && sudo chmod +x /usr/local/bin/ksso
+sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.2/ksso-linux-x64 -o /usr/local/bin/ksso && sudo chmod +x /usr/local/bin/ksso
 ```
 
 ### macOS
 
 ```sh
-sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.0/ksso-macos-arm64 -o /usr/local/bin/ksso \
+sudo curl -L https://github.com/saritasa-nest/ksso/releases/download/v0.1.2/ksso-macos-arm64 -o /usr/local/bin/ksso \
   && sudo chmod +x /usr/local/bin/ksso
+
 ```
 
 On the first run, you must enable the app under **Settings > Privacy & Security** as shown below:
@@ -121,7 +167,7 @@ Run the following commands in an Administrator PowerShell:
 
 ```sh
 Set-ExecutionPolicy RemoteSigned
-$url = "https://github.com/saritasa-nest/ksso/releases/download/v0.1.0/ksso-windows-x64.exe"
+$url = "https://github.com/saritasa-nest/ksso/releases/download/v0.1.2/ksso-windows-x64.exe"
 $output = "$env:USERPROFILE\Downloads\ksso-windows-x64.exe"
 Invoke-WebRequest -Uri $url -OutFile $output
 
@@ -170,7 +216,7 @@ Antivirus software may flag the executable due to the bundling process. Add the 
 3. Run the tool:
 
    ```sh
-   poetry run python ksso/main.py \
+   poetry run ksso login \
        --json \
        --client-id aws-devops \
        --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
@@ -180,12 +226,23 @@ Antivirus software may flag the executable due to the bundling process. Add the 
 
    ```sh
    poetry run nuitka \
-       --onefile \
-       --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
-       --include-data-file=ksso/success_message.html=ksso/success_message.html \
-       --output-dir="dist" \
-       --output-filename=ksso \
-       ksso/main.py
+    --onefile \
+    --include-package=keyring \
+    --include-package=keyring.backends \
+    --include-module=keyring.util.platform_ \
+    --include-package=keyring.backends.SecretService \
+    --include-package=keyring.backends.macOS \
+    --include-package=keyring.backends.Windows \
+    --include-package=keyring.backends.chainer \
+    --include-package=keyring.backends.fail \
+    --include-package=keyring.backends.kwallet \
+    --include-module=keyring.backends \
+    --include-module=keyring.util.platform_ \
+    --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
+    --include-data-file=ksso/success_message.html=ksso/success_message.html \
+    --output-dir="dist" \
+    --output-filename=ksso \
+    ksso/main.py
    ```
 
 ## Debugging
