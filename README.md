@@ -1,4 +1,3 @@
-
 # KSSO
 
 Keycloak AWS OIDC IAM SSO Helper
@@ -54,6 +53,14 @@ credential_process = ksso --json --client-id aws-devops --aws-role-arn arn:aws:i
 [profile keycloak/developers]
 region = us-west-2
 credential_process = ksso --json --client-id aws-developers --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-developers-role
+```
+
+if you want to support multiple keycloak instances, you will need to create a separate config file for each instance and pass the path to the config file using the `--config` flag.
+
+```ini
+[profile keycloak-2/developers]
+region=us-east-1
+credential_process=/usr/local/bin/ksso --config /home/dmitry/.keycloak_2_ksso_config.toml --json --client-id aws-devops --aws-role-arn arn:aws:iam::333444555666:role/prod-keycloak-sso-developers-role
 ```
 
 ## Use
@@ -138,7 +145,6 @@ Add the KSSO folder to your PATH:
 Antivirus software may flag the executable due to the bundling process. Add the file to exceptions if necessary
 ![Antivirus Exception on Windows](.docs/windows-antivirus-exception.png)
 
-
 ## Local Development
 
 ### Requirements
@@ -170,15 +176,27 @@ Antivirus software may flag the executable due to the bundling process. Add the 
        --aws-role-arn arn:aws:iam::111222333444:role/prod-keycloak-sso-administrators-role
    ```
 
+4. Compile binary
+
+   ```sh
+   poetry run nuitka \
+       --onefile \
+       --include-data-file=ksso/failure_access_prohibited_message.html=ksso/failure_access_prohibited_message.html \
+       --include-data-file=ksso/success_message.html=ksso/success_message.html \
+       --output-dir="dist" \
+       --output-filename=ksso \
+       ksso/main.py
+   ```
+
 ## Debugging
 
-### Linux/macOS
+### On Linux/macOS
 
 ```sh
 export DEBUG=1
 ```
 
-### Windows
+### On Windows
 
 ```sh
 $env:DEBUG = "1"
