@@ -52,8 +52,19 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("ksso").setLevel(logging.WARNING)
 
 
-def logout(client_id: str, aws_role_arn: str) -> None:
-    """Logout and remove cached credentials."""
+def logout(client_id: str = None, aws_role_arn: str = None) -> None:
+    """
+    Logout from keycloak
+
+    This will remove cached credentials from the keyring.
+
+    Args:
+        client_id: Optional client ID to filter credentials
+        aws_role_arn: Optional role ARN to filter credentials
+
+    If both client_id and aws_role_arn are provided, only credentials matching both will be removed.
+    If neither is provided, all cached credentials will be removed.
+    """
     if bool(client_id) != bool(aws_role_arn):
         logger.error("--client-id and --aws-role-arn must be specified together")
         exit(1)
@@ -71,7 +82,18 @@ def logout(client_id: str, aws_role_arn: str) -> None:
 
 def login(config: str, client_id: str, aws_role_arn: str) -> AWSCredentials:
     """
-    Login and get AWS credentials.
+    Login to Keycloak and obtain AWS credentials.
+
+    This function authenticates with Keycloak using OIDC flow and then
+    uses the obtained token to assume an AWS IAM role.
+
+    Args:
+        config: Path to the KSSO configuration file
+        client_id: Keycloak client ID to authenticate with
+        aws_role_arn: AWS IAM Role ARN to assume
+
+    Returns:
+        AWSCredentials object containing temporary AWS credentials
     """
     logger.info("No valid cached credentials found, starting authentication flow...")
     try:
